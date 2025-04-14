@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern AI Assistant</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../static/images/arya-favicon.svg">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/assistant.css">
+    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+</head>
+<body>
+    <div class="assistant-container" x-data="window.assistantData" x-init="init()">
+        <!-- Dashboard Panel -->
+        <aside class="dashboard-panel" :class="{ 'hidden': !dashboardVisible }">
+            <div class="dashboard-header">
+                <div class="arya-logo large">
+                    <img src="../static/images/arya-logo.svg" alt="Arya Logo">
+                    <h2 class="arya-logo-text">Arya</h2>
+                </div>
+                <button class="toggle-button" @click="toggleDashboard()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            
+            <div class="welcome-card">
+                <h3>Welcome Back</h3>
+                <p>I'm here to help with your tasks and questions.</p>
+                <div class="theme-toggle">
+                    <span>Theme:</span>
+                    <button @click="toggleTheme()" class="theme-button">
+                        <i class="fas" :class="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
+                        <span x-text="isDarkMode ? 'Light Mode' : 'Dark Mode'"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="actions-section">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="action-button">
+                        <i class="fas fa-file-alt"></i>
+                        <span>New Conversation</span>
+                    </button>
+                    <button class="action-button">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </button>
+                    <button class="action-button">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="memory-section">
+                <h3>Memory</h3>
+                <div class="memory-items">
+                    <div class="memory-item">
+                        <div class="memory-icon"><i class="fas fa-comment"></i></div>
+                        <div class="memory-content">
+                            <h4>Getting Started</h4>
+                            <p>Introduction to assistant features</p>
+                        </div>
+                        <div class="memory-time">10:30 AM</div>
+                    </div>
+                    
+                    <div class="memory-item">
+                        <div class="memory-icon"><i class="fas fa-code"></i></div>
+                        <div class="memory-content">
+                            <h4>Code Review</h4>
+                            <p>JavaScript function analysis</p>
+                        </div>
+                        <div class="memory-time">Yesterday</div>
+                    </div>
+                    
+                    <div class="memory-item">
+                        <div class="memory-icon"><i class="fas fa-lightbulb"></i></div>
+                        <div class="memory-content">
+                            <h4>Project Ideas</h4>
+                            <p>Brainstorming session results</p>
+                        </div>
+                        <div class="memory-time">Oct 15</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Conversation Panel -->
+        <main class="conversation-panel">
+            <div class="conversation-header">
+                <button class="toggle-button" @click="toggleDashboard()" data-toggle="dashboard">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <div class="arya-logo">
+                        <img src="../static/images/arya-logo.svg" alt="Arya Logo">
+                        <h2 class="arya-logo-text">Arya</h2>
+                    </div>
+                </div>
+                <button class="toggle-button" @click="toggleContext()" data-toggle="context">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+            
+            <div class="conversation-messages">
+                <template x-for="message in messages" :key="message.id">
+                    <div class="message" :class="message.type">
+                        <div class="message-header">
+                            <span class="message-sender" x-text="message.sender"></span>
+                            <span class="message-time" x-text="message.time"></span>
+                        </div>
+                        <div class="message-content" x-text="message.content"></div>
+                        <div class="message-actions">
+                            <button @click="copyMessage(message.content)" class="message-action-button">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                
+                <div class="typing-indicator" x-show="isTyping">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+            
+            <div class="conversation-suggestions" x-show="messages.length === 1">
+                <h3>Try asking me:</h3>
+                <div class="suggestions-container">
+                    <template x-for="suggestion in suggestions" :key="suggestion">
+                        <button @click="useSuggestion(suggestion)" class="suggestion-chip" x-text="suggestion"></button>
+                    </template>
+                </div>
+            </div>
+            
+            <div class="conversation-input">
+                <textarea 
+                    x-model="inputMessage" 
+                    @keydown.enter.prevent="if(!$event.shiftKey) window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage()"
+                    placeholder="Type your message..." 
+                    class="message-input"
+                ></textarea>
+                <button @click="window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage()" class="send-button" :disabled="!inputMessage.trim()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </main>
+        
+        <!-- Context Panel -->
+        <aside class="context-panel" :class="{ 'hidden': !contextVisible }">
+            <div class="context-header">
+                <h2>Context</h2>
+                <button class="toggle-button" @click="toggleContext()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="context-content">
+                <div class="context-section">
+                    <h3>Current Topic</h3>
+                    <div class="context-card">
+                        <h4>AI Assistance</h4>
+                        <p>Discussing how the AI assistant can help with various tasks.</p>
+                    </div>
+                </div>
+                
+                <div class="context-section">
+                    <h3>Related Information</h3>
+                    <div class="context-card">
+                        <h4>Available Features</h4>
+                        <ul>
+                            <li>Conversation Management</li>
+                            <li>Memory Storage</li>
+                            <li>Context-Aware Responses</li>
+                            <li>Smart Suggestions</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="context-section">
+                    <h3>Keyboard Shortcuts</h3>
+                    <div class="context-card">
+                        <table class="shortcuts-table">
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+                                <td>Send message</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Esc</kbd></td>
+                                <td>Clear input</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>[</kbd></td>
+                                <td>Toggle dashboard</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>]</kbd></td>
+                                <td>Toggle context panel</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <script src="../static/js/assistant.js"></script>
+    <script src="../static/js/theme.js"></script>
+    <script src="../static/js/responsive.js"></script>
+    <script src="../static/js/voice.js"></script>
+    <script src="../static/js/assistantCustomizer.js"></script>
+</body>
+</html> 

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arya AI Assistant</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/arya-favicon.svg') }}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/assistant.css') }}">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/assistant.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</head>
+<body x-data="assistant" :class="{'dark-mode': isDarkMode}">
+    <div class="assistant-container" :class="{
+        'dashboard-open': showDashboard,
+        'context-open': showContext
+    }">
+        <!-- Dashboard Panel -->
+        <aside class="dashboard-panel" :class="{'visible': showDashboard}">
+            <div class="dashboard-header">
+                <h2>Arya</h2>
+                <button class="icon-button mobile-close" @click="toggleDashboard">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="memory-section">
+                <h3>Recent Conversations</h3>
+                <div class="memory-items">
+                    <template x-for="item in memoryItems" :key="item.title">
+                        <div class="memory-item">
+                            <div class="memory-icon">
+                                <i :class="item.icon"></i>
+                            </div>
+                            <div class="memory-content">
+                                <h4 x-text="item.title"></h4>
+                                <p x-text="item.preview"></p>
+                                <small x-text="item.time"></small>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <div class="dashboard-actions">
+                <button class="action-button">
+                    <i class="fas fa-plus"></i>
+                    New Chat
+                </button>
+                <button class="action-button">
+                    <i class="fas fa-trash"></i>
+                    Clear History
+                </button>
+            </div>
+            
+            <div class="theme-toggle">
+                <button @click="toggleDarkMode" class="theme-button">
+                    <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                    <span x-text="isDarkMode ? 'Light Mode' : 'Dark Mode'"></span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Conversation Area -->
+        <main class="conversation-area">
+            <div class="conversation-header">
+                <button class="icon-button" @click="toggleDashboard" data-toggle="dashboard">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <div class="arya-logo">
+                        <img src="{{ url_for('static', filename='images/arya-logo.svg') }}" alt="Arya Logo">
+                    </div>
+                    <h1 class="arya-logo-text">Arya</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-button" @click="toggleContext" data-toggle="context">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="icon-button">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="conversation-messages">
+                <template x-for="message in messages" :key="message.id">
+                    <div :class="`message ${message.sender}-message`">
+                        <div class="message-content" x-text="message.content"></div>
+                        <div class="message-actions">
+                            <small class="message-time" x-text="message.time"></small>
+                            <button class="message-action" @click="copyMessage(message.content)" title="Copy to clipboard">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Typing indicator -->
+                <div class="typing-indicator" x-show="isTyping">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            
+            <div class="suggestion-chips" x-show="messages.length < 3">
+                <template x-for="suggestion in suggestions" :key="suggestion">
+                    <button class="suggestion-chip" @click="useSuggestion(suggestion)" x-text="suggestion"></button>
+                </template>
+            </div>
+            
+            <div class="message-input-container">
+                <textarea 
+                    x-ref="messageInput"
+                    x-model="currentMessage" 
+                    class="message-input" 
+                    placeholder="Message Arya..."
+                    @keydown.enter.ctrl.prevent="window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage"
+                    @keydown.enter.meta.prevent="window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage"
+                ></textarea>
+                <button class="send-button" @click="window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage" :disabled="!currentMessage.trim()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </main>
+        
+        <!-- Context Panel -->
+        <aside class="context-panel" :class="{'visible': showContext}">
+            <div class="context-header">
+                <h2>Context</h2>
+                <button class="icon-button mobile-close" @click="toggleContext">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="context-section">
+                <h3>Current Topics</h3>
+                <template x-for="topic in currentTopics" :key="topic.title">
+                    <div class="context-item">
+                        <h4 x-text="topic.title"></h4>
+                        <p x-text="topic.description"></p>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="context-section">
+                <h3>Related Information</h3>
+                <template x-for="item in relatedInfo" :key="item.title">
+                    <div class="context-item">
+                        <h4 x-text="item.title"></h4>
+                        <p x-text="item.description"></p>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="context-actions">
+                <button class="action-button">
+                    <i class="fas fa-upload"></i>
+                    Upload File
+                </button>
+                <button class="action-button">
+                    <i class="fas fa-link"></i>
+                    Add Reference
+                </button>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Additional Scripts -->
+    <script src="{{ url_for('static', filename='js/responsive.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/assistantCustomizer.js') }}"></script>
+</body>
+</html> 

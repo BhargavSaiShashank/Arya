@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Material Design Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Alpine.js for lightweight interactivity -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="material-icons">assistant</span>
+                <h1>Intelligent Assistant</h1>
+            </div>
+            <div class="header-actions">
+                <button class="icon-button" title="Settings">
+                    <span class="material-icons">settings</span>
+                </button>
+                <button class="icon-button" title="User Profile">
+                    <span class="material-icons">account_circle</span>
+                </button>
+            </div>
+        </header>
+        
+        <main class="app-content">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <footer class="app-footer">
+            <p>&copy; 2025 Intelligent Assistant</p>
+        </footer>
+    </div>
+    
+    <!-- Base JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

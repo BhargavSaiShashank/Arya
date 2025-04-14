@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:rgba(124, 58, 237, 0.8)"/>
+      <stop offset="100%" style="stop-color:rgba(124, 58, 237, 0)"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- Subtle glow effect -->
+  <circle cx="150" cy="150" r="130" fill="url(#glowGradient)" opacity="0.7"/>
+  
+  <!-- Main hexagon background -->
+  <path d="M150 45 L247.5 97.5 L247.5 202.5 L150 255 L52.5 202.5 L52.5 97.5 Z" 
+        fill="url(#bgGradient)" 
+        stroke="white" 
+        stroke-width="3" 
+        stroke-opacity="0.3"
+        filter="url(#glow)"/>
+  
+  <!-- Abstract A shape -->
+  <path d="M150 90 L200 210 H165 L157.5 180 H142.5 L135 210 H100 Z" 
+        fill="white" 
+        opacity="0.95"/>
+  
+  <!-- Dot at the peak of the A -->
+  <circle cx="150" cy="90" r="12" fill="url(#accentGradient)" stroke="white" stroke-width="2"/>
+  
+  <!-- Network lines representing AI/neural connections -->
+  <g stroke="white" stroke-width="3" stroke-opacity="0.8" stroke-linecap="round">
+    <line x1="100" y1="210" x2="150" y2="90" />
+    <line x1="200" y1="210" x2="150" y2="90" />
+    <line x1="100" y1="210" x2="200" y2="210" />
+    
+    <!-- Additional network lines -->
+    <line x1="150" y1="90" x2="75" y2="105" stroke-dasharray="3,6" />
+    <line x1="150" y1="90" x2="225" y2="105" stroke-dasharray="3,6" />
+    <line x1="75" y1="105" x2="100" y2="210" stroke-dasharray="3,6" />
+    <line x1="225" y1="105" x2="200" y2="210" stroke-dasharray="3,6" />
+  </g>
+  
+  <!-- Small nodes at connection points -->
+  <circle cx="100" cy="210" r="8" fill="white" />
+  <circle cx="200" cy="210" r="8" fill="white" />
+  <circle cx="75" cy="105" r="5" fill="white" />
+  <circle cx="225" cy="105" r="5" fill="white" />
+  
+  <!-- Inner triangle with accent gradient -->
+  <path d="M142.5 170 L150 120 L157.5 170 Z" fill="url(#accentGradient)" />
+</svg> 
