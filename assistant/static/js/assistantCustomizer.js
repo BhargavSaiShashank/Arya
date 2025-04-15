@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     enableAllButtons();
     setupActionHandlers();
     setupDirectInputHandling();
+    createParticleBackground();
+    setupAdvancedAnimations();
 });
 
 /**
@@ -832,4 +834,230 @@ function updateSuggestions(suggestions) {
         
         suggestionsContainer.appendChild(chip);
     });
-} 
+}
+
+/**
+ * Create floating particle background effect
+ */
+function createParticleBackground() {
+    // Create container for particles
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'particles-background';
+    document.body.insertBefore(particlesContainer, document.body.firstChild);
+    
+    // Create particles
+    const particleCount = window.innerWidth < 768 ? 15 : 30;
+    
+    for (let i = 0; i < particleCount; i++) {
+        createParticle(particlesContainer);
+    }
+}
+
+/**
+ * Create a single animated particle
+ */
+function createParticle(container) {
+    const particle = document.createElement('div');
+    
+    // Random size class
+    const sizeClasses = ['particle-small', 'particle-medium', 'particle-large'];
+    const sizeClass = sizeClasses[Math.floor(Math.random() * sizeClasses.length)];
+    
+    particle.className = `particle ${sizeClass}`;
+    
+    // Random position
+    const posX = Math.random() * 100;
+    const posY = Math.random() * 100;
+    
+    particle.style.left = `${posX}%`;
+    particle.style.top = `${posY}%`;
+    
+    // Random opacity
+    particle.style.opacity = (Math.random() * 0.5 + 0.1).toString();
+    
+    // Add to container
+    container.appendChild(particle);
+    
+    // Animate the particle
+    animateParticle(particle);
+}
+
+/**
+ * Animate a particle with random movement
+ */
+function animateParticle(particle) {
+    // Initial position
+    const startX = parseFloat(particle.style.left);
+    const startY = parseFloat(particle.style.top);
+    
+    // Random movement range (smaller for more subtle movement)
+    const rangeX = Math.random() * 10 + 5;
+    const rangeY = Math.random() * 10 + 5;
+    
+    // Random duration (longer for more graceful movement)
+    const duration = Math.random() * 20 + 10;
+    
+    // Animation function using requestAnimationFrame for smooth animation
+    const startTime = Date.now();
+    
+    function moveParticle() {
+        const elapsedTime = (Date.now() - startTime) / 1000;
+        const progress = (elapsedTime % duration) / duration;
+        
+        // Sine waves for smooth back-and-forth motion
+        const moveX = Math.sin(progress * Math.PI * 2) * rangeX;
+        const moveY = Math.cos(progress * Math.PI * 2) * rangeY;
+        
+        // Update position
+        particle.style.left = `${startX + moveX}%`;
+        particle.style.top = `${startY + moveY}%`;
+        
+        // Continue animation
+        requestAnimationFrame(moveParticle);
+    }
+    
+    moveParticle();
+}
+
+/**
+ * Setup advanced UI animations and effects
+ */
+function setupAdvancedAnimations() {
+    // Enhanced typing indicator
+    const createEnhancedTypingIndicator = () => {
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        
+        // Create dots for animation
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'typing-dot';
+            typingIndicator.appendChild(dot);
+        }
+        
+        return typingIndicator;
+    };
+    
+    // Override the built-in typing indicator with our enhanced version
+    window.showTypingIndicator = function(show) {
+        let typingIndicator = document.querySelector('.typing-indicator');
+        
+        if (show) {
+            if (!typingIndicator) {
+                const messagesContainer = document.querySelector('.conversation-messages');
+                if (messagesContainer) {
+                    typingIndicator = createEnhancedTypingIndicator();
+                    messagesContainer.appendChild(typingIndicator);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        } else {
+            if (typingIndicator) {
+                // Fade out animation before removing
+                typingIndicator.style.opacity = '0';
+                setTimeout(() => {
+                    if (typingIndicator.parentElement) {
+                        typingIndicator.remove();
+                    }
+                }, 300);
+            }
+        }
+    };
+    
+    // Enhanced toast animation
+    window.showToast = function(message, type = 'info') {
+        let toast = document.querySelector('.toast');
+        
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.className = 'toast';
+            document.body.appendChild(toast);
+        }
+        
+        // Clear any existing timeout
+        if (window.toastTimeout) {
+            clearTimeout(window.toastTimeout);
+        }
+        
+        // Update content and type
+        toast.textContent = message;
+        toast.className = `toast ${type}`;
+        
+        // Reset animation by forcing reflow
+        toast.style.animation = 'none';
+        toast.offsetHeight; // Trigger reflow
+        toast.style.animation = '';
+        
+        // Show toast
+        toast.classList.add('show');
+        
+        // Hide after delay
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+            
+            // Remove element after animation completes
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 600); // Match animation duration
+        }, 3000);
+    };
+    
+    // Add 3D tilt effect to messages on hover
+    const addTiltEffectToMessages = () => {
+        document.addEventListener('mousemove', (e) => {
+            const messages = document.querySelectorAll('.message:hover');
+            
+            messages.forEach(message => {
+                const rect = message.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const tiltX = (y - centerY) / (centerY) * 5; // Max 5deg tilt
+                const tiltY = (centerX - x) / (centerX) * 5; // Max 5deg tilt
+                
+                message.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px) scale(1.01)`;
+            });
+        });
+        
+        // Reset transform when not hovering
+        document.addEventListener('mouseleave', (e) => {
+            if (e.target.classList.contains('message')) {
+                e.target.style.transform = '';
+            }
+        }, true);
+    };
+    
+    addTiltEffectToMessages();
+    
+    // Observe for new messages to apply animations
+    const messagesContainer = document.querySelector('.conversation-messages');
+    if (messagesContainer) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1 && node.classList.contains('message')) {
+                            // Apply entrance animation
+                            node.style.opacity = '0';
+                            node.style.transform = 'translateY(20px) scale(0.8)';
+                            
+                            // Trigger animation after a small delay for the DOM to update
+                            setTimeout(() => {
+                                node.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                                node.style.opacity = '1';
+                                node.style.transform = 'translateY(0) scale(1)';
+                            }, 10);
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(messagesContainer, { childList: true });
+    }
+}
