@@ -17,6 +17,7 @@ document.addEventListener('alpine:init', () => {
             'Explain quantum computing',
             'Write a creative story',
             'Help me debug my error'
+            
         ],
         
         // Memory items
@@ -94,17 +95,43 @@ document.addEventListener('alpine:init', () => {
             const hours = now.getHours().toString().padStart(2, '0');
             const minutes = now.getMinutes().toString().padStart(2, '0');
             
-            this.messages.push({
+            const messageObj = {
                 id: Date.now(),
                 sender: sender,
                 content: content,
                 time: `${hours}:${minutes}`
-            });
+            };
+            
+            this.messages.push(messageObj);
             
             // Scroll to bottom of messages
             this.$nextTick(() => {
                 const messagesContainer = document.querySelector('.conversation-messages');
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Add voice button to assistant messages
+                if (sender === 'assistant') {
+                    const messageElements = document.querySelectorAll('.message.assistant-message');
+                    const latestMessage = messageElements[messageElements.length - 1];
+                    
+                    if (latestMessage) {
+                        const actionsContainer = latestMessage.querySelector('.message-actions');
+                        
+                        if (actionsContainer && !actionsContainer.querySelector('.message-voice-action')) {
+                            const voiceButton = document.createElement('button');
+                            voiceButton.className = 'message-action-button message-voice-action';
+                            voiceButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+                            voiceButton.setAttribute('aria-label', 'Speak message');
+                            voiceButton.addEventListener('click', () => {
+                                if (window.speakText) {
+                                    window.speakText(content);
+                                }
+                            });
+                            
+                            actionsContainer.appendChild(voiceButton);
+                        }
+                    }
+                }
             });
         },
         

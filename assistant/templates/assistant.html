@@ -110,7 +110,7 @@
             
             <div class="conversation-messages">
                 <template x-for="message in messages" :key="message.id">
-                    <div class="message" :class="message.type">
+                    <div class="message" :class="message.sender === 'assistant' ? 'assistant-message' : 'user-message'">
                         <div class="message-header">
                             <span class="message-sender" x-text="message.sender"></span>
                             <span class="message-time" x-text="message.time"></span>
@@ -143,7 +143,6 @@
             <div class="conversation-input">
                 <textarea 
                     x-model="inputMessage" 
-                    @keydown.enter.prevent="if(!$event.shiftKey) window.sendAlpineMessage ? window.sendAlpineMessage() : sendMessage()"
                     placeholder="Type your message..." 
                     class="message-input"
                 ></textarea>
@@ -217,4 +216,4 @@
     <script src="../static/js/voice.js"></script>
     <script src="../static/js/assistantCustomizer.js"></script>
 </body>
-</html> 
+</html>
